@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel | Shree Swami Opticals</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+body{
+  margin:0;
+  font-family:Poppins;
+  background:#eef1f5;
+}
+.header{
+  background:white;
+  padding:12px 25px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  box-shadow:0 2px 8px rgba(0,0,0,.05);
+}
+.header img{height:40px;}
+.header h2{color:#1DA1C9;margin:0;}
+.container{
+  max-width:1200px;
+  margin:30px auto;
+  padding:20px;
+}
+.section{
+  background:white;
+  padding:20px;
+  border-radius:12px;
+  margin-bottom:25px;
+  box-shadow:0 5px 15px rgba(0,0,0,.08);
+}
+input{
+  padding:10px;
+  margin:5px;
+  width:220px;
+  border:1px solid #ddd;
+  border-radius:8px;
+}
+button{
+  padding:10px 15px;
+  border:none;
+  border-radius:6px;
+  background:#1DA1C9;
+  color:white;
+  cursor:pointer;
+}
+.product-card,.order-card{
+  background:#fff;
+  padding:12px;
+  margin-top:10px;
+  display:flex;
+  gap:15px;
+  align-items:center;
+  border-radius:10px;
+  box-shadow:0 3px 10px rgba(0,0,0,.05);
+}
+.product-card img,.order-card img{
+  width:80px;
+  height:70px;
+  object-fit:cover;
+  border-radius:8px;
+}
+.delete{
+  background:#ff4d4d;
+}
+.old{
+  text-decoration:line-through;
+  color:#999;
+  font-size:14px;
+}
+.offer{
+  color:#F7941D;
+  font-weight:600;
+  font-size:14px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <img src="logo.png">
+  <h2>Shree Swami Opticals</h2>
+</div>
+
+<div class="container">
+
+<div class="section">
+<h2>Add Product</h2>
+
+<input id="name" placeholder="Product Name">
+<input id="price" type="number" placeholder="New Price">
+<input id="oldPrice" type="number" placeholder="Old Price">
+<input id="offer" placeholder="Offer (20% OFF)">
+<input type="file" id="imageFile">
+
+<button onclick="addProduct()">Add Product</button>
+</div>
+
+<div class="section">
+<h2>All Products</h2>
+<div id="productsContainer"></div>
+</div>
+
+<div class="section">
+<h2>All User Orders</h2>
+<div id="ordersContainer"></div>
+</div>
+
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
+
+<script>
+
+/* ------------------- FIREBASE INITIALIZATION ------------------- */
+
+/* PRODUCTS DATABASE (FoodTrack) */
+const productsConfig = {
+  apiKey: "AIzaSyCvojseLUvdaF6NFCMbEB2xA3fLNYPcM0I",
+  authDomain: "foodtrack-94897.firebaseapp.com",
+  databaseURL: "https://foodtrack-94897-default-rtdb.firebaseio.com",
+  projectId: "foodtrack-94897",
+  storageBucket: "foodtrack-94897.firebasestorage.app"
+};
+
+/* USERS DATABASE (Safar) */
+const usersConfig = {
+  apiKey: "AIzaSyA890SKxHYlOOCx5CZVrGjJwy_RvePD3Tc",
+  authDomain: "safar-sign-up-and-login.firebaseapp.com",
+  databaseURL: "https://safar-sign-up-and-login-default-rtdb.firebaseio.com",
+  projectId: "safar-sign-up-and-login"
+};
+
+/* Initialize Apps */
+const productsApp = firebase.initializeApp(productsConfig);
+const usersApp = firebase.initializeApp(usersConfig, "usersApp");
+
+/* Get References */
+const productsDB = productsApp.database();
+const productsStorage = productsApp.storage();
+const usersDB = usersApp.database();
+
+/* ------------------- ADD PRODUCT ------------------- */
+
+function addProduct(){
+
+  const name = document.getElementById("name").value.trim();
+  const price = document.getElementById("price").value.trim();
+  const oldPrice = document.getElementById("oldPrice").value.trim();
+  const offer = document.getElementById("offer").value.trim();
+  const file = document.getElementById("imageFile").files[0];
+
+  if(!name || !price || !file){
+    alert("Please fill all required fields");
+    return;
+  }
+
+  const fileName = Date.now() + "_" + file.name;
+  const storageRef = productsStorage.ref("products/" + fileName);
+
+  storageRef.put(file)
+  .then(snapshot => snapshot.ref.getDownloadURL())
+  .then(url => {
+
+    return productsDB.ref("products").push({
+      name: name,
+      price: price,
+      oldPrice: oldPrice || "",
+      offer: offer || "",
+      image: url,
+      createdAt: Date.now()
+    });
+
+  })
+  .then(()=>{
+    alert("Product Added Successfully");
+    document.querySelectorAll("input").forEach(i=>i.value="");
+  })
+  .catch(err=>{
+    console.error(err);
+    alert("Error adding product");
+  });
+}
+
+/* ------------------- LOAD PRODUCTS ------------------- */
+
+const productsContainer = document.getElementById("productsContainer");
+
+productsDB.ref("products").on("value", snapshot => {
+
+  productsContainer.innerHTML = "";
+
+  if(!snapshot.exists()){
+    productsContainer.innerHTML = "<p>No Products Found</p>";
+    return;
+  }
+
+  snapshot.forEach(child => {
+
+    const id = child.key;
+    const p = child.val();
+
+    productsContainer.innerHTML += `
+      <div class="product-card">
+        <img src="${p.image}" width="80">
+        <div>
+          <h4>${p.name}</h4>
+          <p>₹${p.price}</p>
+          ${p.oldPrice ? `<div class="old">₹${p.oldPrice}</div>`:""}
+          ${p.offer ? `<div class="offer">${p.offer}</div>`:""}
+        </div>
+        <button class="delete" onclick="deleteProduct('${id}')">Delete</button>
+      </div>
+    `;
+  });
+
+});
+
+function deleteProduct(id){
+  productsDB.ref("products/" + id).remove()
+  .then(()=> alert("Product Deleted"));
+}
+
+/* ------------------- LOAD USERS ------------------- */
+
+usersDB.ref("users").on("value", snapshot => {
+
+  if(!snapshot.exists()) return;
+
+  console.log("Users Loaded");
+});
+
+/* ------------------- LOAD ORDERS ------------------- */
+
+const ordersContainer = document.getElementById("ordersContainer");
+
+usersDB.ref("orders").on("value", snapshot => {
+
+  ordersContainer.innerHTML = "";
+
+  if(!snapshot.exists()){
+    ordersContainer.innerHTML = "<p>No Orders Found</p>";
+    return;
+  }
+
+  snapshot.forEach(userSnap => {
+
+    const username = userSnap.key;
+
+    ordersContainer.innerHTML += `<h3>Orders of ${username}</h3>`;
+
+    userSnap.forEach(orderSnap => {
+
+      const orderId = orderSnap.key;
+      const order = orderSnap.val();
+
+      ordersContainer.innerHTML += `
+        <div class="order-card">
+          <img src="${order.image}" width="80">
+          <div>
+            <h4>${order.name}</h4>
+            <p>₹${order.price}</p>
+            <select onchange="updateStatus('${username}','${orderId}',this.value)">
+              <option value="placed" ${order.status==="placed"?"selected":""}>Placed</option>
+              <option value="processing" ${order.status==="processing"?"selected":""}>Processing</option>
+              <option value="shipped" ${order.status==="shipped"?"selected":""}>Shipped</option>
+              <option value="delivered" ${order.status==="delivered"?"selected":""}>Delivered</option>
+            </select>
+          </div>
+        </div>
+      `;
+    });
+
+  });
+
+});
+
+function updateStatus(user, id, status){
+  usersDB.ref("orders/" + user + "/" + id).update({
+    status: status
+  })
+  .then(()=> alert("Status Updated"));
+}
+
+</script>

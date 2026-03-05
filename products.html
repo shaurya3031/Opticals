@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Products | Shree Swami Opticals</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+
+body{
+  background:linear-gradient(135deg,#eef3f8,#f7f9fc);
+  min-height:100vh;
+}
+
+.topbar{
+  background:white;
+  padding:15px 30px;
+  box-shadow:0 4px 15px rgba(0,0,0,0.08);
+  display:flex;
+  align-items:center;
+  gap:15px;
+}
+.topbar img{height:50px;}
+.topbar h2{color:#1DA1C9;}
+
+.container{
+  max-width:1200px;
+  margin:40px auto;
+  padding:0 20px;
+}
+
+.products-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  gap:25px;
+}
+
+.product-card{
+  background:white;
+  padding:20px;
+  border-radius:15px;
+  box-shadow:0 10px 25px rgba(0,0,0,.08);
+  transition:.3s;
+  text-align:center;
+}
+.product-card:hover{
+  transform:translateY(-6px);
+  box-shadow:0 15px 30px rgba(0,0,0,.12);
+}
+
+.product-card img{
+  width:100%;
+  height:200px;
+  object-fit:cover;
+  border-radius:12px;
+  margin-bottom:15px;
+}
+
+.price{
+  font-size:20px;
+  font-weight:700;
+  color:#1DA1C9;
+}
+
+.old{
+  text-decoration:line-through;
+  color:#999;
+  font-size:14px;
+}
+
+.offer{
+  color:#F7941D;
+  font-weight:600;
+  font-size:14px;
+}
+
+button{
+  margin-top:12px;
+  padding:10px;
+  border:none;
+  border-radius:8px;
+  background:#1DA1C9;
+  color:white;
+  cursor:pointer;
+  width:100%;
+  font-weight:600;
+}
+button:hover{
+  background:#1588aa;
+}
+</style>
+</head>
+
+<body>
+
+<div class="topbar">
+  <img src="logo.png">
+  <h2>Shree Swami Opticals</h2>
+</div>
+
+<div class="container">
+  <div class="products-grid" id="productsContainer">
+    Loading products...
+  </div>
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<script>
+
+/* ================= PRODUCTS DATABASE (foodtrack) ================= */
+const productsConfig = {
+  apiKey: "AIzaSyCvojseLUvdaF6NFCMbEB2xA3fLNYPcM0I",
+  authDomain: "foodtrack-94897.firebaseapp.com",
+  databaseURL: "https://foodtrack-94897-default-rtdb.firebaseio.com",
+  projectId: "foodtrack-94897"
+};
+
+/* ================= USERS DATABASE (safar) ================= */
+const usersConfig = {
+  apiKey: "AIzaSyA890SKxHYlOOCx5CZVrGjJwy_RvePD3Tc",
+  authDomain: "safar-sign-up-and-login.firebaseapp.com",
+  databaseURL: "https://safar-sign-up-and-login-default-rtdb.firebaseio.com",
+  projectId: "safar-sign-up-and-login"
+};
+
+/* Initialize BOTH apps (important) */
+const productsApp = firebase.initializeApp(productsConfig, "productsAppProducts");
+const usersApp = firebase.initializeApp(usersConfig, "usersAppProducts");
+
+/* DB References */
+const productsDB = productsApp.database();
+const usersDB = usersApp.database(); // kept for system consistency
+
+const container = document.getElementById("productsContainer");
+
+/* ================= LOAD PRODUCTS ================= */
+productsDB.ref("products").on("value", snapshot => {
+
+  container.innerHTML = "";
+
+  if(!snapshot.exists()){
+    container.innerHTML = "<h3>No products available</h3>";
+    return;
+  }
+
+  snapshot.forEach(child => {
+
+    const id = child.key;
+    const p = child.val();
+
+    container.innerHTML += `
+      <div class="product-card">
+        <img src="${p.image}" onerror="this.src='logo.png'">
+        <h3>${p.name}</h3>
+
+        <div class="price">₹${p.price}</div>
+        ${p.oldPrice ? `<div class="old">₹${p.oldPrice}</div>` : ""}
+        ${p.offer ? `<div class="offer">${p.offer}</div>` : ""}
+
+        <button onclick="viewDetails('${id}')">
+          View Details
+        </button>
+      </div>
+    `;
+  });
+
+});
+
+/* ================= REDIRECT ================= */
+function viewDetails(id){
+  window.location.href = "product.html?id=" + id;
+}
+
+</script>
+
+</body>
+</html>

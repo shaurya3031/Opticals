@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Cart | Shree Swami Opticals</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+body{font-family:Poppins;background:#f7f9fc;margin:0}
+.container{max-width:1100px;margin:30px auto;padding:20px}
+.cart-item{
+background:#fff;padding:15px;margin-bottom:15px;
+display:flex;gap:15px;border-radius:10px;
+box-shadow:0 5px 15px rgba(0,0,0,.08);
+}
+.cart-item img{width:120px;height:100px;object-fit:cover;border-radius:8px}
+.price{color:#1DA1C9;font-weight:700}
+.empty{text-align:center;margin-top:40px;color:#777}
+button{padding:8px 12px;border:none;border-radius:6px;color:#fff;cursor:pointer}
+.remove{background:#ff4d4d}
+.order{background:#F7941D}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>🛒 My Cart</h1>
+
+<div id="cartItems"></div>
+
+</div>
+
+<!-- FIREBASE -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<script>
+
+/* ===============================
+   LOGIN CHECK
+=============================== */
+
+const username = localStorage.getItem("loggedInUser");
+
+if(!username){
+  alert("Please login first");
+  window.location.href = "auth.html";
+}
+
+/* ===============================
+   FIREBASE CONFIG
+=============================== */
+
+const firebaseConfig = {
+  apiKey: "AIzaSyA890SKxHYlOOCx5CZVrGjJwy_RvePD3Tc",
+  authDomain: "safar-sign-up-and-login.firebaseapp.com",
+  databaseURL: "https://safar-sign-up-and-login-default-rtdb.firebaseio.com",
+  projectId: "safar-sign-up-and-login"
+};
+
+if(!firebase.apps.length){
+  firebase.initializeApp(firebaseConfig);
+}
+
+const db = firebase.database();
+const cartItems = document.getElementById("cartItems");
+
+/* ===============================
+   LOAD CART DATA
+=============================== */
+
+function loadCart(){
+
+db.ref("cart/" + username)
+.on("value", snapshot => {
+
+  cartItems.innerHTML = "";
+
+  if(!snapshot.exists()){
+    cartItems.innerHTML =
+      "<div class='empty'>Your cart is empty</div>";
+    return;
+  }
+
+  snapshot.forEach(child => {
+
+    const id = child.key;
+    const p = child.val();
+
+    cartItems.innerHTML += `
+      <div class="cart-item">
+
+        <img src="${p.image}" onerror="this.src='logo.png'">
+
+        <div class="info">
+          <h3>${p.name}</h3>
+          <div class="price">₹${p.price}</div>
+        </div>
+
+        <div class="actions">
+          <button class="remove"
+          onclick="removeItem('${id}')">
+          Remove
+          </button>
+
+          <button class="order"
+          onclick="placeOrder('${id}')">
+          Place Order
+          </button>
+        </div>
+
+      </div>
+    `;
+  });
+
+});
+}
+
+/* ===============================
+   REMOVE ITEM
+=============================== */
+
+function removeItem(id){
+  db.ref("cart/"+username+"/"+id).remove();
+}
+
+/* ===============================
+   PLACE ORDER
+=============================== */
+
+function placeOrder(id){
+
+db.ref("cart/"+username+"/"+id)
+.once("value")
+.then(snap=>{
+
+  if(!snap.exists()) return;
+
+  const order = {
+    ...snap.val(),
+    orderedAt: Date.now(),
+    status: "placed"
+  };
+
+  db.ref("orders/"+username)
+  .push(order)
+  .then(()=>{
+
+    db.ref("cart/"+username+"/"+id).remove();
+
+    alert("Order placed successfully!");
+  });
+
+});
+}
+
+/* START */
+loadCart();
+
+</script>
+
+</body>
+</html>

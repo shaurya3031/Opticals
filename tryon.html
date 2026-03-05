@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>AI Virtual Try On | Shree Swami Opticals</title>
+
+<style>
+body{
+    margin:0;
+    overflow:hidden;
+    background:black;
+}
+
+video, canvas{
+    position:fixed;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+
+#glasses{
+    position:fixed;
+    pointer-events:none;
+    z-index:5;
+    width:200px;
+}
+
+.back-btn{
+    position:fixed;
+    top:20px;
+    left:20px;
+    padding:10px 20px;
+    border:none;
+    background:#1DA1C9;
+    color:white;
+    border-radius:8px;
+    cursor:pointer;
+    z-index:10;
+}
+</style>
+</head>
+
+<body>
+
+<button class="back-btn" onclick="history.back()">⬅ Back</button>
+
+<video id="video" autoplay playsinline></video>
+<canvas id="canvas"></canvas>
+<img id="glasses">
+
+<!-- MEDIAPIPE -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+<script src="auth-guard.js"></script>
+<script>
+
+const video = document.getElementById("video");
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+const glasses = document.getElementById("glasses");
+
+/* =====================
+   LOAD GLASSES IMAGE
+===================== */
+const img = localStorage.getItem("tryOnImage");
+
+if(!img){
+    alert("No try-on image found");
+    history.back();
+}else{
+    glasses.src = img;
+}
+
+/* =====================
+   START CAMERA
+===================== */
+navigator.mediaDevices.getUserMedia({video:true})
+.then(stream=>{
+    video.srcObject = stream;
+})
+.catch(()=>alert("Camera permission denied"));
+
+/* =====================
+   FACE MESH AI
+===================== */
+const faceMesh = new FaceMesh({
+    locateFile: (file) =>
+      `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
+});
+
+faceMesh.setOptions({
+    maxNumFaces:1,
+    refineLandmarks:true,
+    minDetectionConfidence:0.5,
+    minTrackingConfidence:0.5
+});
+
+faceMesh.onResults(results => {
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    if(results.multiFaceLandmarks.length > 0){
+
+        const landmarks = results.multiFaceLandmarks[0];
+
+        // eye landmarks
+        const leftEye = landmarks[33];
+        const rightEye = landmarks[263];
+
+        const x1 = leftEye.x * window.innerWidth;
+        const y1 = leftEye.y * window.innerHeight;
+
+        const x2 = rightEye.x * window.innerWidth;
+        const y2 = rightEye.y * window.innerHeight;
+
+        // center position
+        const centerX = (x1 + x2)/2;
+        const centerY = (y1 + y2)/2;
+
+        // eye distance = size
+        const eyeDistance = Math.abs(x2 - x1);
+
+        glasses.style.width = eyeDistance * 2 + "px";
+        glasses.style.left = centerX + "px";
+        glasses.style.top = centerY + "px";
+        glasses.style.transform = "translate(-50%,-50%)";
+    }
+});
+
+/* =====================
+   CAMERA LOOP
+===================== */
+const camera = new Camera(video, {
+    onFrame: async () => {
+        await faceMesh.send({image: video});
+    },
+    width:640,
+    height:480
+});
+
+camera.start();
+
+</script>
+
+</body>
+</html>

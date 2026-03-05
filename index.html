@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shree Swami Optical</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+
+/* ================= ROOT COLORS ================= */
+:root {
+    --primary-blue: #1DA1C9;
+    --accent-orange: #F7941D;
+    --text-dark: #1C1C1C;
+    --bg-light: #F5F7F9;
+    --white: #FFFFFF;
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+body{
+    background:linear-gradient(to bottom,#f7f9fb,#eef3f7);
+    color:var(--text-dark);
+}
+
+/* ================= NAVBAR ================= */
+
+header{
+    background:white;
+    position:sticky;
+    top:0;
+    z-index:1000;
+    box-shadow:0 2px 12px rgba(0,0,0,0.06);
+}
+
+.navbar{
+    max-width:1200px;
+    margin:auto;
+    padding:10px 15px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.logo-section{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.logo-section img{
+    height:70px;
+}
+
+.shop-name{
+    font-size:22px;
+    font-weight:600;
+    color:var(--primary-blue);
+}
+
+.nav-links{
+    display:flex;
+    gap:25px;
+}
+
+.nav-links a{
+    text-decoration:none;
+    color:var(--text-dark);
+    font-weight:500;
+}
+
+.cart-btn{
+    background:var(--primary-blue);
+    color:white;
+    padding:8px 18px;
+    border-radius:6px;
+    text-decoration:none;
+    font-weight:500;
+    transition:.3s;
+}
+
+.cart-btn:hover{
+    background:var(--accent-orange);
+}
+
+/* ================= SLIDER ================= */
+
+.home{
+    position:relative;
+    height:65vh;
+    overflow:hidden;
+}
+
+.home .slide{
+    min-height:65vh;
+    padding:2rem 7%;
+    background-size:cover !important;
+    background-position:center !important;
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:flex-start;
+    opacity:0;
+    visibility:hidden;
+    transition:opacity .8s ease;
+}
+
+.home .slide.active{
+    opacity:1;
+    visibility:visible;
+}
+
+.home .slide::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:rgba(0,0,0,0.35);
+}
+
+.home .content{
+    position:relative;
+    z-index:2;
+}
+
+.home .content h3{
+    font-size:70px;
+    color:white;
+}
+
+.btn{
+    display:inline-block;
+    padding:14px 28px;
+    border:2px solid var(--text-dark);
+    color:var(--text-dark);
+    text-decoration:none;
+    font-weight:600;
+}
+
+.btn:hover{
+    color:var(--accent-orange);
+    border-color:var(--accent-orange);
+}
+
+#next-slide,#prev-slide{
+    position:absolute;
+    bottom:2rem;
+    right:2rem;
+    height:5rem;
+    width:5rem;
+    line-height:5rem;
+    text-align:center;
+    background:white;
+    cursor:pointer;
+}
+
+#prev-slide{right:8rem;}
+
+/* HERO */
+.hero{
+    max-width:1200px;
+    margin:auto;
+    padding:80px 20px;
+}
+
+.btn-primary{
+    background:var(--primary-blue);
+    color:white;
+    padding:12px 24px;
+    border-radius:30px;
+    text-decoration:none;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+<div class="navbar">
+
+<div class="logo-section">
+<img src="logo.png">
+<div class="shop-name">Shree Swami Optical</div>
+</div>
+
+<div class="nav-links">
+<a href="#">Home</a>
+<a href="#">About</a>
+<a href="#">Products</a>
+<a href="#">Offers</a>
+<a href="#">Contact</a>
+</div>
+
+<!-- SMART BUTTON -->
+<a id="authBtn" href="auth.html" class="cart-btn">Signin / SignUp</a>
+
+</div>
+</header>
+
+<!-- SLIDER -->
+<section class="home">
+
+<div class="slide active" style="background:url(images/home-bg-1.png) no-repeat;">
+<div class="content">
+<span>Protect Your Eyes</span>
+<h3>Upto 50% Off</h3>
+
+<!-- FIXED -->
+<a href="products.html" class="btn">Shop Now</a>
+
+</div>
+</div>
+
+<div class="slide" style="background:url(images/home-bg-2.png) no-repeat;">
+<div class="content">
+<span>Premium Frames</span>
+<h3>New Collection</h3>
+
+<a href="products.html" class="btn">Explore</a>
+
+</div>
+</div>
+
+<div class="slide" style="background:url(images/home-bg-3.png) no-repeat;">
+<div class="content">
+<span>Clear Vision</span>
+<h3>Better Style</h3>
+
+<a href="products.html" class="btn">Shop Now</a>
+
+</div>
+</div>
+
+<div id="next-slide" onclick="next()" class="fas fa-angle-right"></div>
+<div id="prev-slide" onclick="prev()" class="fas fa-angle-left"></div>
+
+</section>
+
+<!-- HERO -->
+<section class="hero">
+<a href="products.html" class="btn-primary">Shop Now</a>
+</section>
+
+<script>
+
+/* SLIDER */
+let slides=document.querySelectorAll('.home .slide');
+let index=0;
+
+function next(){
+slides[index].classList.remove('active');
+index=(index+1)%slides.length;
+slides[index].classList.add('active');
+}
+
+function prev(){
+slides[index].classList.remove('active');
+index=(index-1+slides.length)%slides.length;
+slides[index].classList.add('active');
+}
+
+setInterval(next,4000);
+
+/* SMART NAV BUTTON */
+const user = localStorage.getItem("loggedInUser");
+const authBtn = document.getElementById("authBtn");
+
+if(user){
+    authBtn.innerText="Dashboard";
+    authBtn.href="opdashboard.html";
+}
+
+</script>
+
+</body>
+</html>

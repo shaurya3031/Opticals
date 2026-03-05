@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Product Details | Shree Swami Opticals</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+body{background:linear-gradient(135deg,#eef3f8,#f7f9fc);min-height:100vh;}
+
+.product-header{
+    width:100%;
+    background:#fff;
+    box-shadow:0 4px 15px rgba(0,0,0,0.08);
+    padding:12px 30px;
+}
+.logo-area{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+}
+.logo-left{
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+.logo-left img{height:50px;}
+.logo-left h2{color:#1DA1C9;}
+
+.home-btn{
+    background:#1DA1C9;
+    color:white;
+    border:none;
+    padding:8px 18px;
+    border-radius:8px;
+    cursor:pointer;
+}
+.home-btn:hover{background:#1588aa;}
+
+.wrapper{display:flex;justify-content:center;padding:40px 20px;}
+
+.card{
+    max-width:1100px;
+    width:100%;
+    background:white;
+    border-radius:20px;
+    overflow:hidden;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    box-shadow:0 20px 40px rgba(0,0,0,0.1);
+}
+
+.product-image{padding:30px;display:flex;justify-content:center;}
+.product-image img{width:100%;max-width:450px;border-radius:15px;}
+
+.product-info{padding:40px;}
+.product-info h2{font-size:32px;margin-bottom:10px;}
+
+.price{font-size:28px;color:#1DA1C9;font-weight:700;}
+.old{
+    text-decoration:line-through;
+    color:#999;
+    margin-top:5px;
+}
+.offer{
+    color:#F7941D;
+    font-weight:600;
+    margin-top:5px;
+}
+
+.desc{margin:20px 0;color:#666;line-height:1.7;}
+
+.actions{display:flex;gap:15px;flex-wrap:wrap;}
+
+.cart-btn{
+    background:#1DA1C9;
+    color:white;
+    border:none;
+    padding:12px 24px;
+    border-radius:30px;
+    cursor:pointer;
+    font-weight:600;
+}
+.cart-btn:hover{background:#1588aa;}
+
+@media(max-width:900px){
+    .card{grid-template-columns:1fr;}
+}
+</style>
+</head>
+
+<body>
+
+<header class="product-header">
+<div class="logo-area">
+<div class="logo-left">
+<img src="logo.png">
+<h2>Shree Swami Opticals</h2>
+</div>
+<button class="home-btn" onclick="goHome()">Home</button>
+</div>
+</header>
+
+<div class="wrapper">
+<div class="card" id="productDetails">
+Loading product...
+</div>
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<script>
+
+/* ================= LOGIN CHECK ================= */
+const loggedUser = localStorage.getItem("loggedInUser");
+
+if(!loggedUser){
+    alert("Please login first");
+    window.location.href = "auth.html";
+}
+
+/* ================= PRODUCTS DATABASE (foodtrack) ================= */
+const productConfig = {
+  apiKey: "AIzaSyCvojseLUvdaF6NFCMbEB2xA3fLNYPcM0I",
+  authDomain: "foodtrack-94897.firebaseapp.com",
+  databaseURL: "https://foodtrack-94897-default-rtdb.firebaseio.com",
+  projectId: "foodtrack-94897"
+};
+
+const productsApp = firebase.initializeApp(productConfig, "productApp");
+const productDB = productsApp.database();
+
+/* ================= USERS DATABASE (safar) ================= */
+const userConfig = {
+  apiKey: "AIzaSyA890SKxHYlOOCx5CZVrGjJwy_RvePD3Tc",
+  authDomain: "safar-sign-up-and-login.firebaseapp.com",
+  databaseURL: "https://safar-sign-up-and-login-default-rtdb.firebaseio.com",
+  projectId: "safar-sign-up-and-login"
+};
+
+const userApp = firebase.initializeApp(userConfig,"userAppProduct");
+const cartDB = userApp.database();
+
+/* ================= GET PRODUCT ID ================= */
+const params = new URLSearchParams(window.location.search);
+const id = params.get("id");
+const box = document.getElementById("productDetails");
+
+if(id){
+
+productDB.ref("products/" + id).once("value", snap=>{
+
+    if(!snap.exists()){
+        box.innerHTML="<h2 style='padding:30px'>Product not found</h2>";
+        return;
+    }
+
+    const p = snap.val();
+
+    box.innerHTML = `
+        <div class="product-image">
+            <img src="${p.image}" onerror="this.src='logo.png'">
+        </div>
+
+        <div class="product-info">
+            <h2>${p.name}</h2>
+
+            <div class="price">₹${p.price}</div>
+            ${p.oldPrice ? `<div class="old">₹${p.oldPrice}</div>` : ""}
+            ${p.offer ? `<div class="offer">${p.offer}</div>` : ""}
+
+            <p class="desc">
+            ${p.description || "Premium eyewear crafted for comfort and clarity. Designed for style and durability."}
+            </p>
+
+            <div class="actions">
+                <button class="cart-btn" id="addCartBtn">
+                    🛒 Add to Cart
+                </button>
+            </div>
+        </div>
+    `;
+
+    /* ADD TO CART */
+    document.getElementById("addCartBtn").addEventListener("click", ()=>{
+
+        const cartData = {
+            productId: id,
+            name: p.name,
+            price: p.price,
+            image: p.image,
+            addedAt: Date.now()
+        };
+
+        cartDB.ref("cart/" + loggedUser).push(cartData)
+        .then(()=>{
+            alert("Product added to cart successfully!");
+        })
+        .catch(err=>{
+            console.error(err);
+            alert("Error adding to cart");
+        });
+
+    });
+
+});
+
+}else{
+box.innerHTML="<h2 style='padding:30px'>Invalid product</h2>";
+}
+
+/* HOME BUTTON */
+function goHome(){
+    window.location.href="index.html";
+}
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login | Shree Swami Optical</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+:root{
+    --primary-blue:#1DA1C9;
+    --accent-orange:#F7941D;
+    --text-dark:#1C1C1C;
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+body{
+    height:100vh;
+    display:flex;
+}
+
+.logo-box{
+    text-align:center;
+    margin-bottom:25px;
+}
+
+.logo-box img{
+    height:60px;
+    margin-bottom:8px;
+}
+
+.logo-box h3{
+    font-size:16px;
+    font-weight:500;
+    color:#777;
+}
+
+
+/* ================= LEFT SIDE ================= */
+
+.left-side{
+    flex:1;
+    background:linear-gradient(rgba(29,161,201,0.85),
+                               rgba(29,161,201,0.85)),
+               url("images/home-bg-1.png");
+    background-size:cover;
+    background-position:center;
+    color:white;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    padding:80px;
+}
+
+.left-side h1{
+    font-size:48px;
+    margin-bottom:15px;
+}
+
+.left-side p{
+    font-size:16px;
+    max-width:400px;
+    line-height:1.6;
+}
+
+/* ================= RIGHT SIDE ================= */
+
+.right-side{
+    flex:1;
+    background:#f7f9fb;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+.form-container{
+    width:380px;
+    background:white;
+    padding:40px;
+    border-radius:16px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.08);
+}
+
+.form-container h2{
+    text-align:center;
+    margin-bottom:25px;
+}
+
+.input-group{
+    margin-bottom:15px;
+}
+
+.input-group input, select{
+    width:100%;
+    padding:12px;
+    border:1px solid #ddd;
+    border-radius:8px;
+    outline:none;
+}
+
+.input-group input:focus, select:focus{
+    border-color:var(--primary-blue);
+}
+
+.btn{
+    width:100%;
+    padding:12px;
+    border:none;
+    background:none;
+    border: 2px solid var(--primary-blue);
+    color: var(--primary-blue);
+    font-weight:600;
+    cursor:pointer;
+    margin-top:10px;
+    transition:.3s;
+}
+
+.btn:hover{
+    background:none;
+    border: 2px solid var(--accent-orange);
+    color: var(--accent-orange);
+
+}
+
+.toggle-text{
+    text-align:center;
+    margin-top:15px;
+}
+
+.toggle-text span{
+    color:var(--primary-blue);
+    cursor:pointer;
+    font-weight:500;
+}
+
+/* ================= SIGNUP HIDDEN ================= */
+
+#signup-form{
+    display:none;
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media(max-width:900px){
+    .left-side{
+        display:none;
+    }
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- LEFT -->
+<div class="left-side">
+    <h1>Welcome Back</h1>
+    <p>
+        Discover premium eyewear designed for comfort, clarity and style.
+        Login to continue your journey with Shree Swami Optical.
+    </p>
+</div>
+
+<!-- RIGHT -->
+<div class="right-side">
+
+    <div class="form-container">
+
+    <div class="logo-box">
+        <img src="logo.png" alt="Logo">
+        <h3>Shree Swami Optical</h3>
+    </div>
+
+    <form id="login-form">
+
+            <h2>Login</h2>
+
+            <div class="input-group">
+                <input type="username" placeholder="username" required>
+            </div>
+
+            <div class="input-group">
+                <input type="password" placeholder="Password" required>
+            </div>
+
+            <button class="btn">Login</button>
+
+            <div class="toggle-text">
+                Don't have an account?
+                <span onclick="showSignup()">Sign Up</span>
+            </div>
+        </form>
+
+        <!-- SIGNUP FORM -->
+        <form id="signup-form">
+            <h2>Create Account</h2>
+
+            <div class="input-group">
+                <input type="text" placeholder="Full Name" required>
+            </div>
+             <div class="input-group">
+                <select class="input-group" required>
+                    <option value="" disabled selected>Select Gender</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+
+            <!-- Date of Birth Field -->
+            <div class="input-group">
+                <input type="date" required>
+            </div>
+
+
+            <div class="input-group">
+                <input type="username" placeholder="username" required>
+            </div>
+
+            <div class="input-group">
+                <input type="password" placeholder="Password" required>
+            </div>
+
+            <button class="btn">Sign Up</button>
+
+            <div class="toggle-text">
+                Already have an account?
+                <span onclick="showLogin()">Login</span>
+            </div>
+        </form>
+
+    </div>
+
+</div>
+
+
+    <!-- FIREBASE -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<script>
+
+// ===== FIREBASE CONFIG =====
+ const firebaseConfig = {
+    apiKey: "AIzaSyAXdfOykXPQURyK8zHZgn2fUruhs3fyUQ4",
+    authDomain: "safar-database-bca32.firebaseapp.com",
+    databaseURL: "https://safar-database-bca32-default-rtdb.firebaseio.com",
+    projectId: "safar-database-bca32",
+    storageBucket: "safar-database-bca32.firebasestorage.app",
+    messagingSenderId: "126487581301",
+    appId: "1:126487581301:web:027e83c993443753275e3c"
+  };
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+
+// ===== FORM REFERENCES =====
+const loginForm = document.getElementById("login-form");
+const signupForm = document.getElementById("signup-form");
+
+const loginUsername = loginForm.querySelector("input[placeholder='username']");
+const loginPassword = loginForm.querySelector("input[type='password']");
+
+const signupInputs = signupForm.querySelectorAll("input");
+const signupSelect = signupForm.querySelector("select");
+
+
+// ===== TOGGLE =====
+function showSignup(){
+    loginForm.style.display="none";
+    signupForm.style.display="block";
+}
+
+function showLogin(){
+    signupForm.style.display="none";
+    loginForm.style.display="block";
+}
+
+
+// ===== SIGNUP =====
+signupForm.addEventListener("submit", function(e){
+    e.preventDefault();
+
+    const fullName = signupInputs[0].value;
+    const gender = signupSelect.value;
+    const dob = signupInputs[1].value;
+    const username = signupInputs[2].value;
+    const password = signupInputs[3].value;
+
+    if(username === "" || password === ""){
+        alert("Please fill all fields");
+        return;
+    }
+
+    db.ref("users/" + username).once("value")
+    .then(snapshot => {
+
+        if(snapshot.exists()){
+            alert("Username already exists!");
+        } 
+        else {
+
+            const userData = {
+                fullName,
+                gender,
+                dob,
+                username,
+                password,
+                createdAt: new Date().toISOString()
+            };
+
+            db.ref("users/" + username).set(userData)
+            .then(() => {
+                alert("Signup Successful!");
+                signupForm.reset();
+                showLogin();
+            });
+
+        }
+    });
+});
+
+
+// ===== LOGIN =====
+loginForm.addEventListener("submit", function(e){
+    e.preventDefault();
+
+    const username = loginUsername.value;
+    const password = loginPassword.value;
+
+    db.ref("users/" + username).once("value")
+    .then(snapshot => {
+
+        if(!snapshot.exists()){
+            alert("User not found!");
+            return;
+        }
+
+        const data = snapshot.val();
+
+        if(data.password === password){
+
+       alert("Login Successful!");
+
+       localStorage.setItem("loggedInUser", username);
+
+       window.location.href = "opdashboard.html";
+}
+
+        else{
+            alert("Wrong password!");
+        }
+
+    });
+});
+
+
+
+
+function showSignup(){
+    document.getElementById("login-form").style.display="none";
+    document.getElementById("signup-form").style.display="block";
+}
+
+function showLogin(){
+    document.getElementById("signup-form").style.display="none";
+    document.getElementById("login-form").style.display="block";
+}
+
+</script>
+
+</body>
+</html>
